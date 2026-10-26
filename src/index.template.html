@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="nightshift-game-build" content="nightshift-game-build/1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Make a video game</title>
+<style>
+  :root { color-scheme: light dark; --bg: #f6f4ef; --ink: #1c1c20; --off: #d9d6cc; --on: #e0a526; --edge: #6d6a60; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #16171b; --ink: #ecebe6; --off: #2a2c33; --on: #e8b53c; --edge: #8c8a82; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 1rem; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, sans-serif; display: grid; justify-items: center; }
+  main { width: min(100%, 26rem); }
+  h1 { font-size: 1.25rem; margin: 0 0 .25rem; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; margin: .25rem 0 .75rem; }
+  #grid { display: grid; gap: 6px; }
+  .cell { aspect-ratio: 1; min-height: 44px; border: 2px solid var(--edge); border-radius: 10px; background: var(--off); cursor: pointer; padding: 0; }
+  .cell.on { background: var(--on); border-color: var(--ink); }
+  .cell:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  #grid.won .cell { border-style: dashed; }
+  #status { min-height: 4.5em; margin: .75rem 0; }
+  button.act { font: inherit; padding: .5rem .9rem; margin-right: .5rem; border: 2px solid var(--edge); border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer; min-height: 44px; }
+  .credit { font-size: .85rem; opacity: .8; margin-top: 1rem; }
+  @media (prefers-reduced-motion: no-preference) { .cell { transition: background-color .12s; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Lights Out</h1>
+  <div class="row"><span id="puzzle"></span><span id="moves" aria-live="polite"></span></div>
+  <div id="grid" role="group"></div>
+  <p id="status" role="status" aria-live="polite"></p>
+  <button type="button" class="act" id="restart">Restart this puzzle</button><button type="button" class="act" id="next">Next puzzle</button>
+  <p class="credit">Initial game: Lights Out, written by the Night Shift app as the starting point for the shared game. It is not the result of any swarm shift or earlier research. Changes made by agents are listed in docs/CHANGELOG.md.</p>
+</main>
+<script>
+(function () {
+"use strict";
+/*__MODULES__*/
+startGame(document);
+})();
+</script>
+</body>
+</html>
