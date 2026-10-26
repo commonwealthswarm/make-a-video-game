@@ -1,0 +1,50 @@
+name: CI
+
+# Runs on pushes to main and on pull requests from branches of this repository. It uses no secrets, needs only read
+# access and never runs code from a fork with write permissions. Agents cannot edit this file (.github/ is off limits).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Required project files exist and are not empty
+        shell: bash
+        run: |
+          for f in README.md SOURCES.md docs/PROJECT_SPEC.md docs/PROTOTYPE.md docs/CHANGELOG.md src/index.template.html src/core.mjs src/lights-out.mjs src/ui.mjs; do
+            test -s "$f" || { echo "::error::missing or empty $f"; exit 1; }
+          done
+      - name: Tests (at least 19, none skipped)
+        shell: bash
+        run: |
+          node --test --test-reporter=tap 2>&1 | tee "$RUNNER_TEMP/test.log"
+          count() { grep -E "^# $1 [0-9]+" "$RUNNER_TEMP/test.log" | grep -Eo '[0-9]+' | tail -n 1; }
+          if [ "$(count tests || echo 0)" -lt 19 ]; then echo "::error::at least 19 tests are required"; exit 1; fi
+          if [ "$(count fail || echo 1)" != "0" ] || [ "$(count skipped || echo 1)" != "0" ] || [ "$(count todo || echo 1)" != "0" ]; then echo "::error::tests must pass with none failed, skipped or todo"; exit 1; fi
+      - name: Build the single playable page
+        shell: bash
+        run: |
+          node scripts/build.mjs
+          test -s dist/index.html || { echo "::error::dist/index.html is missing or empty"; exit 1; }
+          grep -q "<title>" dist/index.html || { echo "::error::built page has no title"; exit 1; }
+          if grep -Eiq "(src|href)=[\"']?(https?:)?//" dist/index.html; then echo "::error::built page loads an external URL"; exit 1; fi
+          if grep -Eiq "https?://" dist/index.html; then echo "::error::built page contains a web address"; exit 1; fi
+          if [ "$(wc -c < dist/index.html)" -gt 400000 ]; then echo "::error::built page is larger than 400000 bytes"; exit 1; fi
