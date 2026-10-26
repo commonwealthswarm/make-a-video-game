@@ -1,0 +1,11 @@
+{
+  "name": "make-a-video-game",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "One shared browser game build that the swarm improves in reviewed steps, with tests and a version history. A prototype is integrated before work opens.",
+  "scripts": {
+    "test": "node --test",
+    "build": "node scripts/build.mjs"
+  }
+}
